@@ -35,7 +35,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public StateMachine<PaymentState, PaymentEvent> preAuth(Long paymentId) {
         StateMachine<PaymentState, PaymentEvent> sm = build((paymentId));
-        sendEvent(paymentId, sm, PaymentEvent.PRE_AUTH_APPROVED);
+        sendEvent(paymentId, sm, PaymentEvent.PRE_AUTHORIZE);
         return sm;
     }
 
@@ -55,14 +55,14 @@ public class PaymentServiceImpl implements PaymentService {
         return sm;
     }
 
-    private void sendEvent(Long paymentId, StateMachine<PaymentState, PaymentEvent> sm, PaymentEvent event){
+    private void sendEvent(Long paymentId, StateMachine<PaymentState, PaymentEvent> sm, PaymentEvent event) {
         Message<PaymentEvent> paymentMsg = MessageBuilder.withPayload(event)
                 .setHeader(PAYMENT_ID_HEADER, paymentId)
                 .build();
         sm.sendEvent(paymentMsg);
     }
 
-    private StateMachine<PaymentState, PaymentEvent> build(Long paymentId){
+    private StateMachine<PaymentState, PaymentEvent> build(Long paymentId) {
         Payment payment = paymentRepository.getOne(paymentId);
         StateMachine<PaymentState, PaymentEvent> sm = paymentSmFactory.getStateMachine(Long.toString(payment.getId()));
         sm.stop();
